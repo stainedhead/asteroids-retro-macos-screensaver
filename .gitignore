@@ -1,0 +1,24 @@
+# Rust build artifacts
+/target
+Cargo.lock
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Profiling and benchmarking
+flamegraph.svg
+perf.data
+perf.data.old
+
+# Backup files
+*.bak
+*.orig

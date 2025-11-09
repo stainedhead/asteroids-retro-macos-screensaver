@@ -1,0 +1,179 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-and-release:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: aarch64-apple-darwin
+        override: true
+        profile: minimal
+
+    - name: Cache cargo registry
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Cache cargo index
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/git
+        key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Cache target directory
+      uses: actions/cache@v4
+      with:
+        path: target
+        key: ${{ runner.os }}-target-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Build release binary
+      run: cargo build --release --target aarch64-apple-darwin
+
+    - name: Create app bundle structure
+      run: |
+        mkdir -p "AsteroidsRetro.app/Contents/MacOS"
+        mkdir -p "AsteroidsRetro.app/Contents/Resources"
+
+    - name: Copy binary to app bundle
+      run: |
+        cp target/aarch64-apple-darwin/release/asteroids_screensaver "AsteroidsRetro.app/Contents/MacOS/AsteroidsRetro"
+        chmod +x "AsteroidsRetro.app/Contents/MacOS/AsteroidsRetro"
+
+    - name: Create Info.plist
+      run: |
+        cat > "AsteroidsRetro.app/Contents/Info.plist" << 'EOF'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>CFBundleExecutable</key>
+            <string>AsteroidsRetro</string>
+            <key>CFBundleIdentifier</key>
+            <string>com.stainedhead.asteroids-retro</string>
+            <key>CFBundleName</key>
+            <string>Asteroids Retro</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>CFBundleShortVersionString</key>
+            <string>1.0.0</string>
+            <key>CFBundleVersion</key>
+            <string>1</string>
+            <key>LSMinimumSystemVersion</key>
+            <string>12.0</string>
+            <key>NSHighResolutionCapable</key>
+            <true/>
+            <key>NSHumanReadableCopyright</key>
+            <string>Copyright © 2024 stainedhead. MIT License.</string>
+        </dict>
+        </plist>
+        EOF
+
+    - name: Create DMG
+      run: |
+        # Create temporary directory for DMG contents
+        mkdir -p dmg_contents
+
+        # Copy app bundle
+        cp -R AsteroidsRetro.app dmg_contents/
+
+        # Create Applications symlink
+        ln -s /Applications dmg_contents/Applications
+
+        # Create README for DMG
+        cat > dmg_contents/README.txt << 'EOF'
+        Asteroids Retro macOS Screensaver
+        ==================================
+
+        Installation Instructions:
+
+        1. Drag "AsteroidsRetro.app" to the Applications folder
+        2. Open the app to start the screensaver
+        3. Press ESC to exit
+
+        For more information, visit:
+        https://github.com/stainedhead/asteroids-retro-macos-screensaver
+
+        Requirements:
+        - macOS 12.0 (Monterey) or later
+        - Apple Silicon (M1/M2/M3/M4)
+
+        MIT License - Copyright © 2024
+        EOF
+
+        # Create DMG
+        hdiutil create -volname "AsteroidsRetro" \
+                       -srcfolder dmg_contents \
+                       -ov \
+                       -format UDZO \
+                       AsteroidsRetro-macOS-AppleSilicon.dmg
+
+    - name: Get version from tag
+      id: get_version
+      run: |
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        else
+          echo "version=dev-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: |
+          AsteroidsRetro-macOS-AppleSilicon.dmg
+        body: |
+          ## Asteroids Retro macOS Screensaver - ${{ steps.get_version.outputs.version }}
+
+          ### Features
+          - 🎮 Classic 1979 Asteroids arcade game as autonomous screensaver
+          - 🟢 Arcade green graphics with grey instrument cluster
+          - 🎯 AI-controlled ship with advanced collision avoidance
+          - 📊 HUD with direction/thrust/power indicators
+          - ⚡ Optimized for Apple Silicon with Metal backend
+
+          ### Installation
+          1. Download `AsteroidsRetro-macOS-AppleSilicon.dmg`
+          2. Open the DMG file
+          3. Drag `AsteroidsRetro.app` to your Applications folder
+          4. Launch the app to start the screensaver
+          5. Press ESC to exit
+
+          ### Requirements
+          - macOS 12.0 (Monterey) or later
+          - Apple Silicon Mac (M1/M2/M3/M4)
+
+          ### Documentation
+          - [README](https://github.com/stainedhead/asteroids-retro-macos-screensaver#readme)
+          - [Product Summary](https://github.com/stainedhead/asteroids-retro-macos-screensaver/blob/main/product-summary.md)
+          - [Technical Details](https://github.com/stainedhead/asteroids-retro-macos-screensaver/blob/main/technical-details.md)
+
+          Built with ❤️ using Rust + wgpu + Metal
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload DMG artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AsteroidsRetro-macOS-AppleSilicon
+        path: AsteroidsRetro-macOS-AppleSilicon.dmg
+        retention-days: 30

@@ -1,10 +1,30 @@
 # Asteroids Retro macOS Screensaver
 
+[![Latest Release](https://img.shields.io/github/v/release/stainedhead/asteroids-retro-macos-screensaver?label=Download&style=for-the-badge)](https://github.com/stainedhead/asteroids-retro-macos-screensaver/releases/latest)
+
 A faithful recreation of the classic 1979 Asteroids arcade game, reimagined as an autonomous macOS screensaver. Built with Rust and wgpu, optimized for Apple Silicon Macs.
 
 ## Overview
 
 Watch a self-piloting spaceship navigate through an asteroid field, autonomously avoiding threats and shooting asteroids and enemy saucers. This screensaver delivers the nostalgic arcade experience with contemporary performance and visual polish, running independently without requiring user interaction.
+
+## Installation
+
+### Download the DMG (Recommended)
+
+1. **Download**: Visit the [latest release](https://github.com/stainedhead/asteroids-retro-macos-screensaver/releases/latest) and download the `Asteroids-Retro-Screensaver.dmg` file
+
+2. **Open the DMG**: Double-click the downloaded DMG file to mount it
+
+3. **Install**: Drag the application to your Applications folder
+
+4. **Launch**: Navigate to your Applications folder and double-click to run
+
+**System Requirements**:
+- macOS 12.0 (Monterey) or later
+- Apple Silicon Mac (M1, M2, M3, or M4)
+
+**Note**: On first launch, you may need to right-click the app and select "Open" to bypass Gatekeeper security, as the app is not currently notarized.
 
 ## Features
 
@@ -147,14 +167,16 @@ This is a screensaver, so it runs autonomously.
 - **Memory**: ~50 MB resident (stable)
 - **GPU Usage**: Minimal (efficient 2D vector graphics)
 
-## Requirements
+## Building from Source
+
+### Requirements
 
 - macOS 12.0 (Monterey) or later
 - Apple Silicon (M1/M2/M3/M4)
 - Metal-compatible GPU (all Apple Silicon Macs)
-- Rust 1.70 or later (for building)
+- Rust 1.70 or later
 
-## Building
+### Build Instructions
 
 ```bash
 cargo build --release
@@ -162,7 +184,7 @@ cargo build --release
 
 The project is configured to build only for Apple Silicon (aarch64-apple-darwin).
 
-## Running
+### Running from Source
 
 ```bash
 cargo run --release

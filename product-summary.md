@@ -66,6 +66,22 @@ A self-piloting spaceship navigates through an asteroid field, autonomously avoi
 ### Controls
 - **ESC**: Exit screensaver
 
+## Distribution
+
+### Installation
+
+The screensaver is distributed as a DMG package for easy installation on Apple Silicon Macs:
+
+- **Pre-built Release**: Available on GitHub Releases as `Asteroids-Retro-Screensaver.dmg`
+- **Platform**: Apple Silicon only (M1, M2, M3, M4 processors)
+- **macOS Version**: Requires macOS 12.0 (Monterey) or later
+- **Installation**: Simple drag-and-drop to Applications folder
+- **Source Code**: Available for users who prefer to build from source
+
+### Getting Started
+
+Users can download the latest DMG from the [GitHub Releases page](https://github.com/stainedhead/asteroids-retro-macos-screensaver/releases), mount the disk image, and drag the application to their Applications folder. No additional setup or configuration is required.
+
 ## Target Audience
 
 ### Primary Users

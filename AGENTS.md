@@ -104,21 +104,21 @@ mod tests {
 
 #### Required Documentation Files
 
-1. **product-summary.md** (Root level)
+1. **documents/product-summary.md**
    - High-level product vision and key features
    - Target audience and use cases
    - Current project status
    - Must be concise (1-2 pages max)
    - Update when: Adding major features, changing project direction
 
-2. **product-details.md** (Root level)
+2. **documents/product-details.md**
    - Detailed feature specifications
    - User-facing behavior and configuration
    - Visual design and aesthetics
    - Gameplay mechanics and interactions
    - Update when: Modifying features, adding settings, changing UX
 
-3. **technical-details.md** (Root level)
+3. **documents/technical-details.md**
    - System architecture and design decisions
    - Implementation details and algorithms
    - Performance characteristics
@@ -154,7 +154,7 @@ mod tests {
 - If you change **project goals**: Update product-summary.md
 
 **How AI Agents Must Handle Documentation**:
-1. **Before making changes**: Read product-summary.md, product-details.md, and technical-details.md for context
+1. **Before making changes**: Read documents/product-summary.md, documents/product-details.md, and documents/technical-details.md for context
 2. **After making changes**: Update ALL affected documentation files in the same session
 3. **Never skip**: Documentation is not optional - it's required for every significant change
 4. **Keep consistent**: Ensure documentation matches actual implementation
@@ -431,8 +431,8 @@ When implementing new features:
 
 3. **Documentation Updates**:
    - Update README.md for user-facing changes
-   - Update technical-details.md for architecture changes
-   - Update product-details.md for feature specifications
+   - Update documents/technical-details.md for architecture changes
+   - Update documents/product-details.md for feature specifications
    - Update this file (AGENTS.md) for process changes
 
 4. **Backwards Compatibility**:

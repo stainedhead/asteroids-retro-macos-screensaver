@@ -1,9 +1,9 @@
 mod pipeline;
-mod vertex;
 mod text;
+mod vertex;
 
+pub use text::{render_digit, render_label, render_number};
 pub use vertex::Vertex;
-pub use text::{render_number, render_digit, render_label};
 
 use wgpu::{Device, Queue, Surface, SurfaceConfiguration};
 use winit::window::Window;
@@ -21,16 +21,66 @@ pub struct Color {
 }
 
 impl Color {
-    pub const BLACK: Color = Color { r: 0.0, g: 0.0, b: 0.0, a: 1.0 };
-    pub const WHITE: Color = Color { r: 1.0, g: 1.0, b: 1.0, a: 1.0 };
-    pub const RED: Color = Color { r: 1.0, g: 0.0, b: 0.0, a: 1.0 };
-    pub const GREEN: Color = Color { r: 0.0, g: 1.0, b: 0.0, a: 1.0 };
-    pub const BLUE: Color = Color { r: 0.0, g: 0.5, b: 1.0, a: 1.0 };
-    pub const YELLOW: Color = Color { r: 1.0, g: 1.0, b: 0.0, a: 1.0 };
-    pub const CYAN: Color = Color { r: 0.0, g: 1.0, b: 1.0, a: 1.0 };
-    pub const MAGENTA: Color = Color { r: 1.0, g: 0.0, b: 1.0, a: 1.0 };
-    pub const ARCADE_GREEN: Color = Color { r: 0.0, g: 1.0, b: 0.33, a: 1.0 }; // Matrix/arcade green
-    pub const GREY: Color = Color { r: 0.6, g: 0.6, b: 0.6, a: 1.0 };
+    pub const BLACK: Color = Color {
+        r: 0.0,
+        g: 0.0,
+        b: 0.0,
+        a: 1.0,
+    };
+    pub const WHITE: Color = Color {
+        r: 1.0,
+        g: 1.0,
+        b: 1.0,
+        a: 1.0,
+    };
+    pub const RED: Color = Color {
+        r: 1.0,
+        g: 0.0,
+        b: 0.0,
+        a: 1.0,
+    };
+    pub const GREEN: Color = Color {
+        r: 0.0,
+        g: 1.0,
+        b: 0.0,
+        a: 1.0,
+    };
+    pub const BLUE: Color = Color {
+        r: 0.0,
+        g: 0.5,
+        b: 1.0,
+        a: 1.0,
+    };
+    pub const YELLOW: Color = Color {
+        r: 1.0,
+        g: 1.0,
+        b: 0.0,
+        a: 1.0,
+    };
+    pub const CYAN: Color = Color {
+        r: 0.0,
+        g: 1.0,
+        b: 1.0,
+        a: 1.0,
+    };
+    pub const MAGENTA: Color = Color {
+        r: 1.0,
+        g: 0.0,
+        b: 1.0,
+        a: 1.0,
+    };
+    pub const ARCADE_GREEN: Color = Color {
+        r: 0.0,
+        g: 1.0,
+        b: 0.33,
+        a: 1.0,
+    }; // Matrix/arcade green
+    pub const GREY: Color = Color {
+        r: 0.6,
+        g: 0.6,
+        b: 0.6,
+        a: 1.0,
+    };
 
     pub fn to_array(&self) -> [f32; 4] {
         [self.r, self.g, self.b, self.a]
@@ -138,11 +188,13 @@ impl<'a> Renderer<'a> {
         if !vertices.is_empty() {
             use wgpu::util::DeviceExt;
 
-            let vertex_buffer = self.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                label: Some("Vertex Buffer"),
-                contents: bytemuck::cast_slice(&vertices),
-                usage: wgpu::BufferUsages::VERTEX,
-            });
+            let vertex_buffer = self
+                .device
+                .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                    label: Some("Vertex Buffer"),
+                    contents: bytemuck::cast_slice(&vertices),
+                    usage: wgpu::BufferUsages::VERTEX,
+                });
 
             {
                 let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {

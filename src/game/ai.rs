@@ -1,5 +1,5 @@
-use super::ship::Ship;
 use super::bullet::Bullet;
+use super::ship::Ship;
 use crate::renderer::Color;
 use rand::Rng;
 
@@ -47,13 +47,13 @@ pub fn update_ship_ai(ship: &mut Ship, targets: &[(f32, f32)], delta_time: f32) 
     }
 
     // DANGER ZONE: Aggressive asteroid avoidance
-    let danger_distance = 0.25;  // Increased from 0.15
-    let warning_distance = 0.35;  // Early warning zone
+    let danger_distance = 0.25; // Increased from 0.15
+    let warning_distance = 0.35; // Early warning zone
     let is_ahead = angle_diff.abs() < std::f32::consts::PI * 0.66; // Within 120° ahead (wider arc)
 
     if nearest_dist < danger_distance && is_ahead {
         // IMMEDIATE EVASIVE MANEUVER: Turn hard perpendicular to threat
-        let evade_direction = if angle_diff > 0.0 { -1.0 } else { 1.0 };  // Turn AWAY
+        let evade_direction = if angle_diff > 0.0 { -1.0 } else { 1.0 }; // Turn AWAY
         ship.rotate(evade_direction, delta_time);
         ship.angular_velocity = 0.0;
         // Don't thrust toward danger
@@ -69,16 +69,18 @@ pub fn update_ship_ai(ship: &mut Ship, targets: &[(f32, f32)], delta_time: f32) 
 
     // Normal behavior: aim and shoot
     // Rotate towards target
-    if angle_diff.abs() > 0.05 {  // Tighter tolerance for alignment
+    if angle_diff.abs() > 0.05 {
+        // Tighter tolerance for alignment
         let direction = if angle_diff > 0.0 { 1.0 } else { -1.0 };
         ship.rotate(direction, delta_time);
         // Stop angular velocity so ship stops rotating
         ship.angular_velocity = 0.0;
     } else {
         // Facing target - only thrust if not too close
-        ship.angular_velocity = 0.0;  // Ensure no residual rotation
+        ship.angular_velocity = 0.0; // Ensure no residual rotation
 
-        if nearest_dist > 0.1 {  // Keep safe distance
+        if nearest_dist > 0.1 {
+            // Keep safe distance
             ship.thrust(delta_time);
         }
 

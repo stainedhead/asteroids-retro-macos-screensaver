@@ -1,5 +1,5 @@
-use wgpu::{Device, SurfaceConfiguration};
 use super::vertex::Vertex;
+use wgpu::{Device, SurfaceConfiguration};
 
 pub struct RenderPipeline {
     pub pipeline: wgpu::RenderPipeline,
@@ -56,5 +56,4 @@ impl RenderPipeline {
 
         Self { pipeline }
     }
-
 }

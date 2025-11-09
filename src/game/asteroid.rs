@@ -1,4 +1,4 @@
-use crate::renderer::{Vertex, Color};
+use crate::renderer::{Color, Vertex};
 use rand::Rng;
 
 pub struct Asteroid {
@@ -35,10 +35,7 @@ impl Asteroid {
         for i in 0..num_vertices {
             let angle = (i as f32 / num_vertices as f32) * std::f32::consts::PI * 2.0;
             let offset = rng.gen_range(0.7..1.0);
-            vertices_offset.push((
-                angle.cos() * offset,
-                angle.sin() * offset,
-            ));
+            vertices_offset.push((angle.cos() * offset, angle.sin() * offset));
         }
 
         Self {

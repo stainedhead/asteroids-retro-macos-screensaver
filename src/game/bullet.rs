@@ -1,4 +1,4 @@
-use crate::renderer::{Vertex, Color};
+use crate::renderer::{Color, Vertex};
 
 pub struct Bullet {
     pub x: f32,

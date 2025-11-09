@@ -1,6 +1,6 @@
-pub mod renderer;
 pub mod game;
 pub mod macos;
+pub mod renderer;
 
 use winit::window::Window;
 
@@ -30,6 +30,7 @@ impl<'a> AsteroidsScreensaver<'a> {
 
     pub fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
         self.renderer.resize(new_size);
-        self.game_state.resize(new_size.width as f32, new_size.height as f32);
+        self.game_state
+            .resize(new_size.width as f32, new_size.height as f32);
     }
 }

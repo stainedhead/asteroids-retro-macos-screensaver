@@ -1,11 +1,7 @@
 use asteroids_screensaver::AsteroidsScreensaver;
-use winit::{
-    event::*,
-    event_loop::EventLoop,
-    window::WindowBuilder,
-};
-use std::time::Instant;
 use std::sync::Arc;
+use std::time::Instant;
+use winit::{event::*, event_loop::EventLoop, window::WindowBuilder};
 
 fn main() {
     env_logger::init();
@@ -13,18 +9,21 @@ fn main() {
     let event_loop = EventLoop::new().unwrap();
 
     // Get primary monitor size for automatic adaptation
-    let primary_monitor = event_loop.available_monitors()
+    let primary_monitor = event_loop
+        .available_monitors()
         .next()
         .expect("No monitors found");
 
     let monitor_size = primary_monitor.size();
 
-    let window = Arc::new(WindowBuilder::new()
-        .with_title("Asteroids Retro Screensaver")
-        .with_inner_size(monitor_size)
-        .with_fullscreen(None) // Can be set to Some(Fullscreen::Borderless(None)) for fullscreen
-        .build(&event_loop)
-        .unwrap());
+    let window = Arc::new(
+        WindowBuilder::new()
+            .with_title("Asteroids Retro Screensaver")
+            .with_inner_size(monitor_size)
+            .with_fullscreen(None) // Can be set to Some(Fullscreen::Borderless(None)) for fullscreen
+            .build(&event_loop)
+            .unwrap(),
+    );
 
     let mut screensaver = pollster::block_on(AsteroidsScreensaver::new(&window));
     let mut last_frame = Instant::now();

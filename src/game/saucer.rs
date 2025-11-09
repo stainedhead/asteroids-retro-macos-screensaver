@@ -1,4 +1,4 @@
-use crate::renderer::{Vertex, Color};
+use crate::renderer::{Color, Vertex};
 use rand::Rng;
 
 #[derive(Clone, Copy)]
@@ -78,15 +78,15 @@ impl Saucer {
 
     pub fn shoot(&mut self) {
         self.shoot_cooldown = match self.size {
-            SaucerSize::Large => 2.0,  // Slower shooting
-            SaucerSize::Small => 1.0,  // Faster shooting
+            SaucerSize::Large => 2.0, // Slower shooting
+            SaucerSize::Small => 1.0, // Faster shooting
         };
     }
 
     pub fn get_size_value(&self) -> f32 {
         match self.size {
-            SaucerSize::Large => 0.07,   // Increased by 40% (0.05 * 1.4 = 0.07)
-            SaucerSize::Small => 0.042,  // Increased by 40% (0.03 * 1.4 = 0.042)
+            SaucerSize::Large => 0.07,  // Increased by 40% (0.05 * 1.4 = 0.07)
+            SaucerSize::Small => 0.042, // Increased by 40% (0.03 * 1.4 = 0.042)
         }
     }
 
@@ -102,21 +102,24 @@ impl Saucer {
 
         // Classic flying saucer shape
         // Top dome
-        let dome_points = [(-size * 0.6, 0.0),
+        let dome_points = [
+            (-size * 0.6, 0.0),
             (-size * 0.4, size * 0.4),
             (0.0, size * 0.5),
             (size * 0.4, size * 0.4),
-            (size * 0.6, 0.0)];
+            (size * 0.6, 0.0),
+        ];
 
         // Bottom section
-        let bottom_points = [(-size * 0.6, 0.0),
+        let bottom_points = [
+            (-size * 0.6, 0.0),
             (-size, -size * 0.3),
             (size, -size * 0.3),
-            (size * 0.6, 0.0)];
+            (size * 0.6, 0.0),
+        ];
 
         // Center line (widest part)
-        let center_line = [(-size, 0.0),
-            (size, 0.0)];
+        let center_line = [(-size, 0.0), (size, 0.0)];
 
         // Draw dome
         for i in 0..dome_points.len() - 1 {
@@ -137,7 +140,10 @@ impl Saucer {
                 color,
             });
             vertices.push(Vertex {
-                position: [self.x + bottom_points[i + 1].0, self.y + bottom_points[i + 1].1],
+                position: [
+                    self.x + bottom_points[i + 1].0,
+                    self.y + bottom_points[i + 1].1,
+                ],
                 color,
             });
         }

@@ -1,15 +1,15 @@
-mod physics;
-mod ship;
+mod ai;
 mod asteroid;
 mod bullet;
-mod ai;
+mod physics;
 mod saucer;
+mod ship;
 
-use crate::renderer::{Vertex, Color};
-pub use ship::Ship;
+use crate::renderer::{Color, Vertex};
 pub use asteroid::Asteroid;
 pub use bullet::Bullet;
 pub use saucer::{Saucer, SaucerSize};
+pub use ship::Ship;
 
 pub struct GameState {
     pub player_ship: Ship,
@@ -27,8 +27,8 @@ pub struct GameState {
     time_since_last_death: f32,
     max_asteroids: usize,
     // Configurable colors
-    pub game_color: Color,        // Color for game objects (ship, asteroids, bullets, saucers)
-    pub hud_color: Color,          // Color for HUD/instrument cluster
+    pub game_color: Color, // Color for game objects (ship, asteroids, bullets, saucers)
+    pub hud_color: Color,  // Color for HUD/instrument cluster
 }
 
 impl Default for GameState {
@@ -44,11 +44,7 @@ impl GameState {
         let hud_color = Color::GREY;
 
         // One player ship in the center, using game color
-        let player_ship = Ship::new(
-            0.0, 0.0,
-            game_color,
-            0,
-        );
+        let player_ship = Ship::new(0.0, 0.0, game_color, 0);
 
         Self {
             player_ship,
@@ -62,8 +58,8 @@ impl GameState {
             time_since_saucer_spawn: 0.0,
             saucer_id_counter: 1,
             deaths_in_short_time: 0,
-            time_since_last_death: 10.0,  // Start high so first death doesn't trigger
-            max_asteroids: 12,  // Reasonable limit for playability
+            time_since_last_death: 10.0, // Start high so first death doesn't trigger
+            max_asteroids: 12,           // Reasonable limit for playability
             game_color,
             hud_color,
         }
@@ -88,7 +84,8 @@ impl GameState {
         }
 
         // Update player ship with simple AI behavior for screensaver mode
-        let targets: Vec<_> = self.asteroids
+        let targets: Vec<_> = self
+            .asteroids
             .iter()
             .map(|a| (a.x, a.y))
             .chain(self.saucers.iter().map(|s| (s.x, s.y)))
@@ -104,7 +101,10 @@ impl GameState {
 
         // Handle burst firing - check each frame if a bullet should be fired
         if self.player_ship.update_burst() {
-            self.bullets.push(ai::create_bullet_from_ship(&self.player_ship, self.game_color));
+            self.bullets.push(ai::create_bullet_from_ship(
+                &self.player_ship,
+                self.game_color,
+            ));
         }
 
         // Update saucers with AI
@@ -118,8 +118,8 @@ impl GameState {
 
             if saucer.can_shoot() {
                 let shoot_chance = match saucer.size {
-                    SaucerSize::Large => 0.3,  // Less accurate, shoots more randomly
-                    SaucerSize::Small => 0.7,  // More accurate
+                    SaucerSize::Large => 0.3, // Less accurate, shoots more randomly
+                    SaucerSize::Small => 0.7, // More accurate
                 };
 
                 if rng.gen_bool(shoot_chance) {
@@ -128,12 +128,24 @@ impl GameState {
                     let dy = self.player_ship.y - saucer.y;
                     let angle = dy.atan2(dx);
 
-                    new_saucer_bullets.push(Bullet::new(saucer.x, saucer.y, angle, saucer.id, self.game_color));
+                    new_saucer_bullets.push(Bullet::new(
+                        saucer.x,
+                        saucer.y,
+                        angle,
+                        saucer.id,
+                        self.game_color,
+                    ));
                     saucer.shoot();
                 } else if rng.gen_bool(0.5) {
                     // Random shot
                     let angle = rng.gen_range(0.0..std::f32::consts::PI * 2.0);
-                    new_saucer_bullets.push(Bullet::new(saucer.x, saucer.y, angle, saucer.id, self.game_color));
+                    new_saucer_bullets.push(Bullet::new(
+                        saucer.x,
+                        saucer.y,
+                        angle,
+                        saucer.id,
+                        self.game_color,
+                    ));
                     saucer.shoot();
                 }
             }
@@ -177,7 +189,8 @@ impl GameState {
             SaucerSize::Small
         };
 
-        self.saucers.push(Saucer::new(size, self.saucer_id_counter, self.game_color));
+        self.saucers
+            .push(Saucer::new(size, self.saucer_id_counter, self.game_color));
         self.saucer_id_counter += 1;
     }
 
@@ -210,7 +223,7 @@ impl GameState {
         self.bullets.clear();
 
         // Give a brief pause before spawning new asteroids
-        self.time_since_asteroid_spawn = -5.0;  // 5 second grace period
+        self.time_since_asteroid_spawn = -5.0; // 5 second grace period
     }
 
     fn spawn_asteroid(&mut self) {
@@ -291,7 +304,7 @@ impl GameState {
 
         if player_died {
             self.handle_player_death();
-            return;  // Skip remaining collision checks this frame
+            return; // Skip remaining collision checks this frame
         }
 
         // Bullet-Saucer collisions
@@ -367,7 +380,7 @@ impl GameState {
         let mut vertices = Vec::new();
 
         // Render score in top-left corner
-        use crate::renderer::{render_number, render_label};
+        use crate::renderer::{render_label, render_number};
         vertices.extend(render_number(self.score, -0.95, 0.9, 0.06, self.hud_color));
 
         // Calculate aspect ratio for circular compass
@@ -377,21 +390,27 @@ impl GameState {
         let base_x = 0.55;
         let label_size = 0.025;
         let value_size = 0.03;
-        let spacing = 0.12;  // Vertical spacing between indicators
-        let indicator_width = 0.12;  // All visual indicators same width
+        let spacing = 0.12; // Vertical spacing between indicators
+        let indicator_width = 0.12; // All visual indicators same width
         let color = self.hud_color.to_array();
 
         // === 1. DIRECTION INDICATOR ===
         let dir_y = 0.90;
 
         // Label (left-aligned at base_x)
-        vertices.extend(render_label("DIRECT", base_x, dir_y, label_size, self.hud_color));
+        vertices.extend(render_label(
+            "DIRECT",
+            base_x,
+            dir_y,
+            label_size,
+            self.hud_color,
+        ));
 
         // Direction indicator position
-        let cursor_x = base_x + 0.18 + indicator_width / 2.0;  // Center of indicator area
-        let cursor_y = dir_y - 0.0125;  // Vertically centered with baseline
+        let cursor_x = base_x + 0.18 + indicator_width / 2.0; // Center of indicator area
+        let cursor_y = dir_y - 0.0125; // Vertically centered with baseline
         let cursor_radius = 0.025;
-        let cursor_y_scale = aspect_ratio;  // Scale Y to maintain aspect ratio
+        let cursor_y_scale = aspect_ratio; // Scale Y to maintain aspect ratio
 
         // Screen-shaped box frame (rectangular outline matching screen aspect)
         let box_half_width = indicator_width / 2.0;
@@ -403,18 +422,42 @@ impl GameState {
         let box_top = cursor_y + box_half_height;
         let box_bottom = cursor_y - box_half_height;
 
-        vertices.push(Vertex { position: [box_left, box_top], color });
-        vertices.push(Vertex { position: [box_right, box_top], color });
-        vertices.push(Vertex { position: [box_right, box_top], color });
-        vertices.push(Vertex { position: [box_right, box_bottom], color });
-        vertices.push(Vertex { position: [box_right, box_bottom], color });
-        vertices.push(Vertex { position: [box_left, box_bottom], color });
-        vertices.push(Vertex { position: [box_left, box_bottom], color });
-        vertices.push(Vertex { position: [box_left, box_top], color });
+        vertices.push(Vertex {
+            position: [box_left, box_top],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [box_right, box_top],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [box_right, box_top],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [box_right, box_bottom],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [box_right, box_bottom],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [box_left, box_bottom],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [box_left, box_bottom],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [box_left, box_top],
+            color,
+        });
 
         // Circle inside the box (using 16 segments for smooth appearance)
         let circle_segments = 16;
-        let circle_radius = cursor_radius * 0.8;  // Slightly smaller than cursor range
+        let circle_radius = cursor_radius * 0.8; // Slightly smaller than cursor range
         for i in 0..circle_segments {
             let angle1 = (i as f32 / circle_segments as f32) * 2.0 * std::f32::consts::PI;
             let angle2 = ((i + 1) as f32 / circle_segments as f32) * 2.0 * std::f32::consts::PI;
@@ -424,16 +467,34 @@ impl GameState {
             let x2 = cursor_x + circle_radius * angle2.cos();
             let y2 = cursor_y + (circle_radius / cursor_y_scale) * angle2.sin();
 
-            vertices.push(Vertex { position: [x1, y1], color });
-            vertices.push(Vertex { position: [x2, y2], color });
+            vertices.push(Vertex {
+                position: [x1, y1],
+                color,
+            });
+            vertices.push(Vertex {
+                position: [x2, y2],
+                color,
+            });
         }
 
         // Center point (small dot) - draw as small cross
         let dot_size = 0.002;
-        vertices.push(Vertex { position: [cursor_x - dot_size, cursor_y], color });
-        vertices.push(Vertex { position: [cursor_x + dot_size, cursor_y], color });
-        vertices.push(Vertex { position: [cursor_x, cursor_y - dot_size / cursor_y_scale], color });
-        vertices.push(Vertex { position: [cursor_x, cursor_y + dot_size / cursor_y_scale], color });
+        vertices.push(Vertex {
+            position: [cursor_x - dot_size, cursor_y],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [cursor_x + dot_size, cursor_y],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [cursor_x, cursor_y - dot_size / cursor_y_scale],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [cursor_x, cursor_y + dot_size / cursor_y_scale],
+            color,
+        });
 
         // Triangular cursor that rotates around center point
         let cursor_angle = self.player_ship.angle + std::f32::consts::FRAC_PI_2;
@@ -453,24 +514,56 @@ impl GameState {
         let base2_y = cursor_y + (base_radius / cursor_y_scale) * base_angle2.sin();
 
         // Draw triangle (tip to base1, base1 to base2, base2 to tip)
-        vertices.push(Vertex { position: [tip_x, tip_y], color });
-        vertices.push(Vertex { position: [base1_x, base1_y], color });
-        vertices.push(Vertex { position: [base1_x, base1_y], color });
-        vertices.push(Vertex { position: [base2_x, base2_y], color });
-        vertices.push(Vertex { position: [base2_x, base2_y], color });
-        vertices.push(Vertex { position: [tip_x, tip_y], color });
+        vertices.push(Vertex {
+            position: [tip_x, tip_y],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [base1_x, base1_y],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [base1_x, base1_y],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [base2_x, base2_y],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [base2_x, base2_y],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [tip_x, tip_y],
+            color,
+        });
 
         // Numeric direction value (right-aligned at base_x + 0.35)
         let mut degrees = self.player_ship.angle.to_degrees();
-        while degrees < 0.0 { degrees += 360.0; }
-        degrees = degrees % 360.0;
-        vertices.extend(render_number(degrees as u32, base_x + 0.35, dir_y, value_size, self.hud_color));
+        while degrees < 0.0 {
+            degrees += 360.0;
+        }
+        degrees %= 360.0;
+        vertices.extend(render_number(
+            degrees as u32,
+            base_x + 0.35,
+            dir_y,
+            value_size,
+            self.hud_color,
+        ));
 
         // === 2. THRUST INDICATOR ===
         let thrust_y = dir_y - spacing;
 
         // Label (left-aligned at base_x)
-        vertices.extend(render_label("THRUST", base_x, thrust_y, label_size, self.hud_color));
+        vertices.extend(render_label(
+            "THRUST",
+            base_x,
+            thrust_y,
+            label_size,
+            self.hud_color,
+        ));
 
         // Thrust bar (width = indicator_width = 0.12)
         let thrust_bar_x = base_x + 0.18;
@@ -478,35 +571,85 @@ impl GameState {
         let thrust_bar_height = 0.025;
 
         // Outline
-        vertices.push(Vertex { position: [thrust_bar_x, thrust_y], color });
-        vertices.push(Vertex { position: [thrust_bar_x + thrust_bar_width, thrust_y], color });
-        vertices.push(Vertex { position: [thrust_bar_x + thrust_bar_width, thrust_y], color });
-        vertices.push(Vertex { position: [thrust_bar_x + thrust_bar_width, thrust_y - thrust_bar_height], color });
-        vertices.push(Vertex { position: [thrust_bar_x + thrust_bar_width, thrust_y - thrust_bar_height], color });
-        vertices.push(Vertex { position: [thrust_bar_x, thrust_y - thrust_bar_height], color });
-        vertices.push(Vertex { position: [thrust_bar_x, thrust_y - thrust_bar_height], color });
-        vertices.push(Vertex { position: [thrust_bar_x, thrust_y], color });
+        vertices.push(Vertex {
+            position: [thrust_bar_x, thrust_y],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [thrust_bar_x + thrust_bar_width, thrust_y],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [thrust_bar_x + thrust_bar_width, thrust_y],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [
+                thrust_bar_x + thrust_bar_width,
+                thrust_y - thrust_bar_height,
+            ],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [
+                thrust_bar_x + thrust_bar_width,
+                thrust_y - thrust_bar_height,
+            ],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [thrust_bar_x, thrust_y - thrust_bar_height],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [thrust_bar_x, thrust_y - thrust_bar_height],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [thrust_bar_x, thrust_y],
+            color,
+        });
 
         // Fill based on speed
-        let speed = (self.player_ship.vx * self.player_ship.vx + self.player_ship.vy * self.player_ship.vy).sqrt();
+        let speed = (self.player_ship.vx * self.player_ship.vx
+            + self.player_ship.vy * self.player_ship.vy)
+            .sqrt();
         let thrust_fill = (thrust_bar_width - 0.005) * (speed / 1.0).min(1.0);
         if thrust_fill > 0.0 {
             for i in 0..3 {
                 let y = thrust_y - 0.005 - (thrust_bar_height - 0.01) * (i as f32 / 2.0);
-                vertices.push(Vertex { position: [thrust_bar_x + 0.003, y], color });
-                vertices.push(Vertex { position: [thrust_bar_x + 0.003 + thrust_fill, y], color });
+                vertices.push(Vertex {
+                    position: [thrust_bar_x + 0.003, y],
+                    color,
+                });
+                vertices.push(Vertex {
+                    position: [thrust_bar_x + 0.003 + thrust_fill, y],
+                    color,
+                });
             }
         }
 
         // Numeric value (0-9, right-aligned at base_x + 0.35)
         let thrust_value = ((speed * 10.0).min(9.0)) as u32;
-        vertices.extend(render_number(thrust_value, base_x + 0.35, thrust_y, value_size, self.hud_color));
+        vertices.extend(render_number(
+            thrust_value,
+            base_x + 0.35,
+            thrust_y,
+            value_size,
+            self.hud_color,
+        ));
 
         // === 3. POWER INDICATOR ===
         let power_y = thrust_y - spacing;
 
         // Label (left-aligned at base_x)
-        vertices.extend(render_label("POWER", base_x, power_y, label_size, self.hud_color));
+        vertices.extend(render_label(
+            "POWER",
+            base_x,
+            power_y,
+            label_size,
+            self.hud_color,
+        ));
 
         // Power bar with tip (width = indicator_width = 0.12)
         let power_bar_x = base_x + 0.18;
@@ -514,39 +657,105 @@ impl GameState {
         let power_bar_height = 0.025;
 
         // Outline
-        vertices.push(Vertex { position: [power_bar_x, power_y], color });
-        vertices.push(Vertex { position: [power_bar_x + power_bar_width, power_y], color });
-        vertices.push(Vertex { position: [power_bar_x + power_bar_width, power_y], color });
-        vertices.push(Vertex { position: [power_bar_x + power_bar_width, power_y - power_bar_height], color });
-        vertices.push(Vertex { position: [power_bar_x + power_bar_width, power_y - power_bar_height], color });
-        vertices.push(Vertex { position: [power_bar_x, power_y - power_bar_height], color });
-        vertices.push(Vertex { position: [power_bar_x, power_y - power_bar_height], color });
-        vertices.push(Vertex { position: [power_bar_x, power_y], color });
+        vertices.push(Vertex {
+            position: [power_bar_x, power_y],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [power_bar_x + power_bar_width, power_y],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [power_bar_x + power_bar_width, power_y],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [power_bar_x + power_bar_width, power_y - power_bar_height],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [power_bar_x + power_bar_width, power_y - power_bar_height],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [power_bar_x, power_y - power_bar_height],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [power_bar_x, power_y - power_bar_height],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [power_bar_x, power_y],
+            color,
+        });
 
         // Battery tip (arrow pointing right)
         let tip_width = 0.008;
         let tip_height = power_bar_height * 0.4;
         let tip_y_center = power_y - power_bar_height / 2.0;
-        vertices.push(Vertex { position: [power_bar_x + power_bar_width, tip_y_center + tip_height], color });
-        vertices.push(Vertex { position: [power_bar_x + power_bar_width + tip_width, tip_y_center + tip_height], color });
-        vertices.push(Vertex { position: [power_bar_x + power_bar_width + tip_width, tip_y_center + tip_height], color });
-        vertices.push(Vertex { position: [power_bar_x + power_bar_width + tip_width, tip_y_center - tip_height], color });
-        vertices.push(Vertex { position: [power_bar_x + power_bar_width + tip_width, tip_y_center - tip_height], color });
-        vertices.push(Vertex { position: [power_bar_x + power_bar_width, tip_y_center - tip_height], color });
+        vertices.push(Vertex {
+            position: [power_bar_x + power_bar_width, tip_y_center + tip_height],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [
+                power_bar_x + power_bar_width + tip_width,
+                tip_y_center + tip_height,
+            ],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [
+                power_bar_x + power_bar_width + tip_width,
+                tip_y_center + tip_height,
+            ],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [
+                power_bar_x + power_bar_width + tip_width,
+                tip_y_center - tip_height,
+            ],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [
+                power_bar_x + power_bar_width + tip_width,
+                tip_y_center - tip_height,
+            ],
+            color,
+        });
+        vertices.push(Vertex {
+            position: [power_bar_x + power_bar_width, tip_y_center - tip_height],
+            color,
+        });
 
         // Fill based on energy
         let power_fill = (power_bar_width - 0.005) * self.player_ship.energy;
         if power_fill > 0.0 {
             for i in 0..4 {
                 let y = power_y - 0.005 - (power_bar_height - 0.01) * (i as f32 / 3.0);
-                vertices.push(Vertex { position: [power_bar_x + 0.003, y], color });
-                vertices.push(Vertex { position: [power_bar_x + 0.003 + power_fill, y], color });
+                vertices.push(Vertex {
+                    position: [power_bar_x + 0.003, y],
+                    color,
+                });
+                vertices.push(Vertex {
+                    position: [power_bar_x + 0.003 + power_fill, y],
+                    color,
+                });
             }
         }
 
         // Numeric value (percentage, right-aligned at base_x + 0.35)
         let power_pct = (self.player_ship.energy * 100.0) as u32;
-        vertices.extend(render_number(power_pct, base_x + 0.35, power_y, value_size, self.hud_color));
+        vertices.extend(render_number(
+            power_pct,
+            base_x + 0.35,
+            power_y,
+            value_size,
+            self.hud_color,
+        ));
 
         // Render player ship
         vertices.extend(self.player_ship.get_vertices());

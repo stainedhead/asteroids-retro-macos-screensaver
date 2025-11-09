@@ -1,5 +1,5 @@
-use crate::renderer::{Vertex, Color};
 use super::physics;
+use crate::renderer::{Color, Vertex};
 
 pub struct Ship {
     pub x: f32,
@@ -11,9 +11,9 @@ pub struct Ship {
     pub color: Color,
     pub id: usize,
     pub shoot_cooldown: f32,
-    pub thrust_level: u8,  // 0 = no thrust, 1-3 = thrust levels
-    pub energy: f32,       // Battery/energy level (0.0 to 1.0)
-    pub burst_count: u8,   // Current shot in burst (0-2)
+    pub thrust_level: u8,    // 0 = no thrust, 1-3 = thrust levels
+    pub energy: f32,         // Battery/energy level (0.0 to 1.0)
+    pub burst_count: u8,     // Current shot in burst (0-2)
     pub burst_cooldown: f32, // Time between burst shots
     spawn_x: f32,
     spawn_y: f32,
@@ -32,7 +32,7 @@ impl Ship {
             id,
             shoot_cooldown: 0.0,
             thrust_level: 0,
-            energy: 1.0,  // Start with full battery
+            energy: 1.0, // Start with full battery
             burst_count: 0,
             burst_cooldown: 0.0,
             spawn_x: x,
@@ -46,7 +46,7 @@ impl Ship {
             // Set velocity directly in forward direction (not additive)
             // Ship nose points up (+Y) in local coords at angle 0
             // In standard trig, +Y is angle π/2, so we ADD π/2
-            let thrust_speed = 0.6;  // Fixed forward speed when thrusting
+            let thrust_speed = 0.6; // Fixed forward speed when thrusting
             let forward_angle = self.angle + std::f32::consts::FRAC_PI_2;
             self.vx = forward_angle.cos() * thrust_speed;
             self.vy = forward_angle.sin() * thrust_speed;
@@ -119,7 +119,7 @@ impl Ship {
 
         // Recharge energy when not shooting or thrusting (fast recharge)
         if self.shoot_cooldown <= 0.0 && self.thrust_level == 0 {
-            self.energy += 1.5 * delta_time;  // Fast recharge
+            self.energy += 1.5 * delta_time; // Fast recharge
             if self.energy > 1.0 {
                 self.energy = 1.0;
             }
@@ -162,14 +162,14 @@ impl Ship {
         self.angle = 0.0;
         self.angular_velocity = 0.0;
         self.thrust_level = 0;
-        self.energy = 1.0;  // Restore full energy on respawn
+        self.energy = 1.0; // Restore full energy on respawn
         self.burst_count = 0;
         self.burst_cooldown = 0.0;
     }
 
     // Get the position of the ship's nose (for bullet spawning)
     pub fn get_nose_position(&self) -> (f32, f32) {
-        let size = 0.024;  // Reduced by 20% (0.03 * 0.8 = 0.024)
+        let size = 0.024; // Reduced by 20% (0.03 * 0.8 = 0.024)
         let nose_offset = size * 2.0;
         // Ship nose is at +Y in local coords, which matches how rotate_point works
         let (nx, ny) = physics::rotate_point(0.0, nose_offset, self.angle);
@@ -177,7 +177,7 @@ impl Ship {
     }
 
     pub fn get_vertices(&self) -> Vec<Vertex> {
-        let size = 0.024;  // Reduced by 20% (0.03 * 0.8 = 0.024)
+        let size = 0.024; // Reduced by 20% (0.03 * 0.8 = 0.024)
         let color = [self.color.r, self.color.g, self.color.b, self.color.a];
 
         // Redesigned ship with straight sides
@@ -190,35 +190,35 @@ impl Ship {
         //     ||   ||  (double overhang lines)
         //     5     6  (base)
 
-        let wing_height = size * 1.5;  // Total height
-        let top_width = size * 0.8;    // Width at shoulders
-        let base_width = size * 0.4;   // Width at base (narrower overhang)
+        let wing_height = size * 1.5; // Total height
+        let top_width = size * 0.8; // Width at shoulders
+        let base_width = size * 0.4; // Width at base (narrower overhang)
 
         // Crossbar at 75% height
         let crossbar_y = -wing_height + (wing_height * 0.25);
-        let shoulder_y = size * 0.5;  // Where straight sides begin
+        let shoulder_y = size * 0.5; // Where straight sides begin
 
-        let points = vec![
-            (0.0, size * 2.0),              // 0: Nose tip
-            (-top_width, shoulder_y),       // 1: Left shoulder
-            (top_width, shoulder_y),        // 2: Right shoulder
-            (-top_width, crossbar_y),       // 3: Left at crossbar
-            (top_width, crossbar_y),        // 4: Right at crossbar
-            (-base_width, -wing_height),    // 5: Left base (overhang)
-            (base_width, -wing_height),     // 6: Right base (overhang)
+        let points = [
+            (0.0, size * 2.0),           // 0: Nose tip
+            (-top_width, shoulder_y),    // 1: Left shoulder
+            (top_width, shoulder_y),     // 2: Right shoulder
+            (-top_width, crossbar_y),    // 3: Left at crossbar
+            (top_width, crossbar_y),     // 4: Right at crossbar
+            (-base_width, -wing_height), // 5: Left base (overhang)
+            (base_width, -wing_height),  // 6: Right base (overhang)
         ];
 
         let mut vertices = Vec::new();
 
         // Draw the main ship outline
         let lines = vec![
-            (0, 1),  // Left side from nose to shoulder
-            (1, 3),  // Left straight side to crossbar
-            (3, 5),  // Left side continues to base overhang
-            (0, 2),  // Right side from nose to shoulder
-            (2, 4),  // Right straight side to crossbar
-            (4, 6),  // Right side continues to base overhang
-            (3, 4),  // Crossbar
+            (0, 1), // Left side from nose to shoulder
+            (1, 3), // Left straight side to crossbar
+            (3, 5), // Left side continues to base overhang
+            (0, 2), // Right side from nose to shoulder
+            (2, 4), // Right straight side to crossbar
+            (4, 6), // Right side continues to base overhang
+            (3, 4), // Crossbar
         ];
 
         for (start, end) in lines {
@@ -240,12 +240,12 @@ impl Ship {
 
         // Add small diamond window in the nose (doesn't touch sides)
         let window_size = size * 0.3;
-        let window_y = size * 1.2;  // Inside the nose area
-        let diamond_points = vec![
-            (0.0, window_y + window_size),           // Top
-            (-window_size * 0.5, window_y),          // Left
-            (0.0, window_y - window_size),           // Bottom
-            (window_size * 0.5, window_y),           // Right
+        let window_y = size * 1.2; // Inside the nose area
+        let diamond_points = [
+            (0.0, window_y + window_size),  // Top
+            (-window_size * 0.5, window_y), // Left
+            (0.0, window_y - window_size),  // Bottom
+            (window_size * 0.5, window_y),  // Right
         ];
 
         let diamond_lines = vec![(0, 1), (1, 2), (2, 3), (3, 0)];
@@ -271,8 +271,8 @@ impl Ship {
         let overhang_lines = vec![
             // Outer overhang lines (already drawn as part of main outline)
             // Inner overhang lines (parallel to outer)
-            ((-inner_width, crossbar_y), (-inner_width, -wing_height)),  // Left inner
-            ((inner_width, crossbar_y), (inner_width, -wing_height)),    // Right inner
+            ((-inner_width, crossbar_y), (-inner_width, -wing_height)), // Left inner
+            ((inner_width, crossbar_y), (inner_width, -wing_height)),   // Right inner
         ];
 
         for ((x1, y1), (x2, y2)) in overhang_lines {
@@ -300,17 +300,17 @@ impl Ship {
 
             // Triangle flame pointing away from the back center
             let back_y = -wing_height;
-            let flame_points = vec![
-                (-size * 0.3, back_y),           // Left edge at ship base
-                (size * 0.3, back_y),            // Right edge at ship base
-                (0.0, back_y - flame_size),      // Point extending away from ship
+            let flame_points = [
+                (-size * 0.3, back_y),      // Left edge at ship base
+                (size * 0.3, back_y),       // Right edge at ship base
+                (0.0, back_y - flame_size), // Point extending away from ship
             ];
 
             // Draw flame triangle (3 lines)
             let flame_lines = vec![
-                (0, 1),  // Base of triangle at ship
-                (1, 2),  // Right side to point
-                (2, 0),  // Left side back to base
+                (0, 1), // Base of triangle at ship
+                (1, 2), // Right side to point
+                (2, 0), // Left side back to base
             ];
 
             for (start, end) in flame_lines {
